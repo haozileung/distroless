@@ -3,14 +3,15 @@ fileExistenceTests:
 # Basic FS sanity checks.
 - name: root
   path: '/'
-  isDirectory: true
   shouldExist: true
 - name: tmp
   path: '/tmp'
-  isDirectory: true
   shouldExist: true
 - name: passwd
   path: '/etc/passwd'
+  shouldExist: true
+- name: group
+  path: '/etc/group'
   shouldExist: true
 - name: etc-os-release
   path: '/etc/os-release'
@@ -27,3 +28,13 @@ fileExistenceTests:
 - name: tzdata
   path: '/usr/sbin/tzconfig'
   shouldExist: true
+- name: homedir
+  path: '/home'
+  shouldExist: true
+fileContentTests:
+- name: 'known users'
+  path: '/etc/passwd'
+  expectedContents: ['^root:x:0:0:user:/home:/bin/bash\n$']
+- name: 'known groups'
+  path: '/etc/group'
+  expectedContents: ['^root:x:0:\ntty:x:5:\nstaff:x:50:\n$']

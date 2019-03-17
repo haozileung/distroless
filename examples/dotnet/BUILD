@@ -1,11 +1,11 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
-docker_build(
+container_image(
     name = "hello",
-    base = "//dotnet:dotnet",
+    base = "//experimental/dotnet:dotnet",
     cmd = [
         "dotnet",
         "/bin/Release/netcoreapp2.0/hello.dll",
@@ -13,10 +13,11 @@ docker_build(
     files = [":bin"],
 )
 
-load("@runtimes_common//structure_tests:tests.bzl", "structure_test")
+load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
 
-structure_test(
+container_test(
     name = "hello_test",
-    config = "testdata/hello.yaml",
+    size = "small",
+    configs = ["testdata/hello.yaml"],
     image = ":hello",
 )

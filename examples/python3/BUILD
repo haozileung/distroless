@@ -1,15 +1,15 @@
 load("@io_bazel_rules_docker//python:image.bzl", "py_image")
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 
 py_image(
     name = "hello_py",
     srcs = ["hello.py"],
-    base = "//python3:python3",
+    base = "//experimental/python3:python3",
     main = "hello.py",
 )
 
 # This example runs a python program that walks the filesystem under "/etc" and prints every filename.
-docker_build(
+container_image(
     name = "hello",
     base = ":hello_py",
     cmd = ["/etc"],

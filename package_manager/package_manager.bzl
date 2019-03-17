@@ -1,9 +1,10 @@
 load(":dpkg.bzl", "dpkg_list", "dpkg_src")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
 def package_manager_repositories():
-  native.http_file(
+  http_file(
       name = "dpkg_parser",
-      url = ('https://storage.googleapis.com/distroless/package_manager_tools/872f43c0f9b0f3d0d0c4d832edc59a1e4bd63e99/dpkg_parser.par'),
+      urls = [('https://storage.googleapis.com/distroless/package_manager_tools/548be30ea343ebf1e3729e1334b8adca8957e0c1/dpkg_parser.par')],
       executable = True,
-      sha256 = "ec12a77e02b1358434e15e1ce68b08501675350858a8e79599fb9e1064b051c0",
+      sha256 = "2ca62e67ce4d79a3f4072908559beef9f9c15e1a0f8dbc72a92c046f7c0c9df6",
   )

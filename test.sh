@@ -16,11 +16,11 @@
 
 set -e
 
-# Bazel build and test
-bazel clean
-bazel build //...
-bazel test --test_output=errors //...
-
 # Linting
 ./buildifier.sh
 find . -name "*.py" |xargs pylint --disable=R,C
+
+# Bazel build and test
+bazel clean --curses=no
+bazel build --curses=no //...
+bazel test --curses=no --test_output=errors //...

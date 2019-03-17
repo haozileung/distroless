@@ -5,14 +5,15 @@ load("@io_bazel_rules_docker//java:image.bzl", "java_image")
 java_image(
     name = "hello",
     srcs = ["HelloJava.java"],
-    base = "//java:java8",
+    base = "//java:java11",
     main_class = "examples.HelloJava",
 )
 
-load("@runtimes_common//structure_tests:tests.bzl", "structure_test")
+load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
 
-structure_test(
+container_test(
     name = "hello_test",
-    config = "testdata/hello.yaml",
+    size = "small",
+    configs = ["testdata/hello.yaml"],
     image = ":hello",
 )

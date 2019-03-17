@@ -15,7 +15,7 @@ def package_to_rule(workspace_name, s):
     return  "@" + workspace_name + "//file:" + encode_package_name(s)
 
 def encode_package_name(s):
-    return base64.urlsafe_b64encode(s) + ".deb"
+    return base64.urlsafe_b64encode(s.encode('utf-8')).decode('utf-8') + ".deb"
 
 DEBIAN_RELEASES = {
     "stretch": "9",
@@ -41,9 +41,9 @@ def generate_os_release(distro, os_release_file):
         ("ID", "debian"),
         ("VERSION_ID", ""),
         ("VERSION", ""),
-        ("HOME_URL", "https://github.com/GoogleCloudPlatform/distroless"),
-        ("SUPPORT_URL", "https://github.com/GoogleCloudPlatform/distroless/blob/master/README.md"),
-        ("BUG_REPORT_URL", "https://github.com/GoogleCloudPlatform/distroless/issues/new"),
+        ("HOME_URL", "https://github.com/GoogleContainerTools/distroless"),
+        ("SUPPORT_URL", "https://github.com/GoogleContainerTools/distroless/blob/master/README.md"),
+        ("BUG_REPORT_URL", "https://github.com/GoogleContainerTools/distroless/issues/new"),
     ])
     if distro in DEBIAN_RELEASES:
         os_release["VERSION_ID"] = DEBIAN_RELEASES[distro]

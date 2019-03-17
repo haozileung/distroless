@@ -1,9 +1,9 @@
 # "Distroless" Docker Images
 
-[![Build Status](https://travis-ci.org/GoogleCloudPlatform/distroless.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/distroless)
+[![Build Status](https://travis-ci.org/GoogleContainerTools/distroless.svg?branch=master)](https://travis-ci.org/GoogleContainerTools/distroless)
 
 "Distroless" images contain only your application and its runtime dependencies.
-They do not contain package managers, shells any other programs you would expect to find in a standard Linux distribution.
+They do not contain package managers, shells or any other programs you would expect to find in a standard Linux distribution.
 
 For more information, see this [talk](https://swampup2017.sched.com/event/A6CW/distroless-docker-containerizing-apps-not-vms?iframe=no&w=100%&sidebar=yes&bg=no) ([video](https://www.youtube.com/watch?v=lviLZFciDv4)).
 
@@ -17,21 +17,41 @@ It improves the signal to noise of scanners (e.g. CVE) and reduces the burden of
 
 These images are built using the [bazel](https://bazel.build) tool, but they can also be used through other Docker image build tooling.
 
+### Entrypoints
+
+Note that distroless images by default do not contain a shell.
+That means the Dockerfile `ENTRYPOINT` command must be specified in `vector` form, to avoid the container runtime prefixing with a shell.
+
+This works:
+
+```
+ENTRYPOINT ['myapp']
+```
+
+But this does not work:
+
+```
+ENTRYPOINT 'myapp'
+```
+
 ### Docker
 
 Docker multi-stage builds make using distroless images easy.
 Follow these steps to get started:
 
-* Pick the right base image for your application stack
+* Pick the right base image for your application stack.
   We publish the following distroless base images on `gcr.io`:
+    * [gcr.io/distroless/static](base/README.md)
     * [gcr.io/distroless/base](base/README.md)
-    * [gcr.io/distroless/python2.7](python2.7/README.md)
-    * [gcr.io/distroless/python3](python3/README.md)
-    * [gcr.io/distroless/nodejs](nodejs/README.md)
     * [gcr.io/distroless/java](java/README.md)
-    * [gcr.io/distroless/java/jetty](java/jetty/README/md)
     * [gcr.io/distroless/cc](cc/README.md)
-    * [gcr.io/distroless/dotnet](dotnet/README.md)
+
+* The following images are also published on `gcr.io`, but are considered experimental and not recommended for production usage:
+    * [gcr.io/distroless/python2.7](experimental/python2.7/README.md)
+    * [gcr.io/distroless/python3](experimental/python3/README.md)
+    * [gcr.io/distroless/nodejs](experimental/nodejs/README.md)
+    * [gcr.io/distroless/java/jetty](java/jetty/README.md)
+    * [gcr.io/distroless/dotnet](experimental/dotnet/README.md)
 * Write a multi-stage docker file.
   Note: This requires Docker 17.05 or higher.
 
@@ -49,8 +69,8 @@ Follow these steps to get started:
   WORKDIR /go/src/app
   COPY . .
 
-  RUN go-wrapper download   # "go get -d -v ./..."
-  RUN go-wrapper install
+  RUN go get -d -v ./...
+  RUN go install -v ./...
 
   # Now copy it into our base image.
   FROM gcr.io/distroless/base
@@ -59,7 +79,6 @@ Follow these steps to get started:
   ```
 
 You can find other examples here:
-
 
 * [Java](examples/java/Dockerfile)
 * [Python](examples/python2.7/Dockerfile)
@@ -97,7 +116,50 @@ See here for:
 See here for examples on how to complete some common tasks in your image:
 
 * [Adding and running as a non-root user](examples/nonroot)
-* [Including debian packages](https://github.com/bazelbuild/rules_docker#docker_build-1)
+* [Including debian packages](https://github.com/bazelbuild/rules_docker#container_image-1)
 * [Including CA certificates](cacerts/)
 
 See here for more information on how these images are [built and released](RELEASES.md).
+
+### Jib
+
+For full documentation on how to use Jib to generate Docker images from Maven and Gradle, see the [GoogleContainerTools/jib](http://github.com/GoogleContainerTools/jib) repository.
+
+### Debug Images
+
+Distroless images are minimal and lack shell access.  The ```:debug``` image set for each language provides a busybox shell to enter.
+
+For example:
+
+
+```
+cd examples/python2.7/
+```
+
+edit the ```Dockerfile``` to change the final image to ```:debug```:
+
+```dockerfile
+FROM python:2.7-slim AS build-env
+ADD . /app
+WORKDIR /app
+
+FROM gcr.io/distroless/python2.7:debug
+COPY --from=build-env /app /app
+WORKDIR /app
+CMD ["hello.py", "/etc"]
+```
+
+then build and launch with an shell entrypoint:
+
+```
+$ docker build -t my_debug_image .
+```
+
+```
+$ docker run --entrypoint=sh -ti my_debug_image
+
+/app # ls
+BUILD       Dockerfile  hello.py
+```
+
+> Note: [ldd](http://man7.org/linux/man-pages/man1/ldd.1.html) is not installed in the base image as it's a shell script, you can copy it in or download it.

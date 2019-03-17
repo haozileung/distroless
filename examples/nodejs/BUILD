@@ -1,28 +1,28 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 
 # These examples are adapted from:
 # https://howtonode.org/hello-node
-docker_build(
+container_image(
     name = "hello",
-    base = "//nodejs:nodejs",
+    base = "//experimental/nodejs:nodejs",
     cmd = ["hello.js"],
     files = [":hello.js"],
 )
 
-docker_build(
+container_image(
     name = "hello_http",
-    base = "//nodejs:nodejs",
+    base = "//experimental/nodejs:nodejs",
     cmd = ["hello_http.js"],
     files = [":hello_http.js"],
     ports = ["8000"],
 )
 
-load("@runtimes_common//structure_tests:tests.bzl", "structure_test")
+load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
 
-structure_test(
+container_test(
     name = "hello_test",
-    config = "testdata/hello.yaml",
+    configs = ["testdata/hello.yaml"],
     image = ":hello",
 )
